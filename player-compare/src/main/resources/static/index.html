@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f97316">
+<meta name="description" content="Find NBA players most similar to any player based on real stats">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NBA DNA">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<title>NBA DNA — Player Similarity Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#08080f;--surface:#0e0e1c;--card:#141428;--card-hover:#1b1b35;
+  --border:#252545;--accent:#f97316;--accent-glow:rgba(249,115,22,.12);
+  --indigo:#6366f1;--indigo-glow:rgba(99,102,241,.15);
+  --text:#e8e8f4;--muted:#6b7280;--muted-2:#9ca3af;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 15% 15%,rgba(249,115,22,.06) 0%,transparent 50%),
+             radial-gradient(ellipse at 85% 85%,rgba(99,102,241,.06) 0%,transparent 50%);
+}
+.wrap{max-width:860px;margin:0 auto;padding:0 20px;position:relative;z-index:1;}
+
+header{padding:52px 0 36px;text-align:center;}
+.logo{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(64px,11vw,108px);
+  letter-spacing:6px;line-height:.9;
+  background:linear-gradient(135deg,#fff 0%,var(--accent) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.tagline{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--muted);margin-top:10px;}
+
+.search-row{display:flex;gap:10px;margin:36px 0 8px;}
+.search-input{
+  flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:16px 20px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.search-input::placeholder{color:var(--muted);}
+.search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+.btn{
+  background:var(--accent);color:#000;border:none;border-radius:12px;padding:16px 26px;
+  font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;
+  letter-spacing:.5px;transition:all .18s;white-space:nowrap;
+}
+.btn:hover{background:#fb923c;transform:translateY(-1px);}
+.btn:active{transform:translateY(0);}
+.btn-ghost{
+  background:transparent;color:var(--text);border:1px solid var(--border);border-radius:12px;
+  padding:10px 20px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;
+  cursor:pointer;transition:all .18s;
+}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);}
+.hint{font-size:12px;color:var(--muted);margin-bottom:16px;}
+.hint code{background:var(--card);padding:2px 6px;border-radius:4px;color:var(--accent);font-size:11px;}
+
+.confirm-card{
+  background:var(--surface);border:1px solid var(--accent);border-radius:14px;
+  padding:18px 20px;margin-top:12px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  animation:fadeUp .3s ease forwards;
+}
+.confirm-avatar{
+  width:52px;height:52px;border-radius:50%;background:var(--accent-glow);
+  border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);flex-shrink:0;
+}
+.confirm-info{flex:1;min-width:120px;}
+.confirm-found{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.confirm-name{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;line-height:1;}
+.confirm-pos{font-size:12px;color:var(--muted);margin-top:3px;letter-spacing:1px;}
+.confirm-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.confirm-err{
+  background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);
+  border-radius:10px;padding:12px 16px;color:#f87171;font-size:13px;
+  margin-top:12px;animation:fadeUp .3s ease forwards;
+}
+.searching{padding:12px 0;color:var(--muted);font-size:13px;margin-top:8px;}
+
+.config-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;margin-bottom:24px;}
+.config-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.config-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;}
+.toggle-row{display:flex;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:4px;gap:4px;}
+.tog{padding:7px 18px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .18s;}
+.tog.on{background:var(--accent);color:#000;font-weight:700;}
+.preset-note{background:var(--card);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--muted-2);line-height:1.6;}
+.preset-note strong{color:var(--accent);}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:4px;}
+.stat-tile{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px;transition:border-color .18s;}
+.stat-tile:hover{border-color:var(--accent);}
+.stat-abbr{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.stat-name{font-size:12px;color:var(--muted-2);margin-bottom:10px;}
+.weight-slider{width:100%;accent-color:var(--accent);cursor:pointer;}
+.weight-val{font-size:12px;color:var(--accent);font-weight:600;text-align:right;margin-top:4px;}
+.config-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+
+.loading{text-align:center;padding:52px 0;}
+.spinner{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading p{color:var(--muted);font-size:13px;letter-spacing:1px;}
+.err-box{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:14px 18px;color:#f87171;font-size:13px;}
+
+.results-wrap{margin:28px 0 40px;}
+.sec-label{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;margin-bottom:14px;}
+.target-card{
+  background:linear-gradient(135deg,var(--card) 0%,rgba(249,115,22,.07) 100%);
+  border:1px solid var(--accent);border-radius:16px;padding:22px 24px;margin-bottom:28px;
+  display:flex;align-items:center;gap:20px;flex-wrap:wrap;animation:fadeUp .35s ease forwards;
+}
+.avatar{width:60px;height:60px;border-radius:50%;background:var(--accent-glow);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent);flex-shrink:0;}
+.player-info{flex:1;min-width:140px;}
+.player-name{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;line-height:1;}
+.player-meta{font-size:12px;color:var(--muted);margin-top:3px;letter-spacing:1px;}
+.key-stats{display:flex;gap:20px;flex-wrap:wrap;}
+.kstat{text-align:center;}
+.kstat-val{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--accent);line-height:1;}
+.kstat-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+.sim-list{display:flex;flex-direction:column;gap:10px;}
+.sim-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 22px;transition:all .18s;animation:fadeUp .35s ease both;}
+.sim-card:hover{border-color:var(--accent);background:var(--card-hover);transform:translateX(4px);}
+.sim-top{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
+.rank{font-family:'Bebas Neue',sans-serif;font-size:34px;color:var(--border);line-height:1;min-width:36px;transition:color .18s;}
+.sim-card:hover .rank{color:var(--accent);}
+.sim-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;}
+.sim-pos{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-top:1px;}
+.sim-badge{margin-left:auto;background:var(--indigo-glow);border:1px solid rgba(99,102,241,.3);color:#818cf8;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:1px;}
+.comparisons{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;}
+.cmp{background:var(--surface);border-radius:8px;padding:10px 12px;}
+.cmp-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.bar-row{display:flex;align-items:center;gap:7px;margin-bottom:4px;}
+.bar-who{font-size:9px;color:var(--muted);width:42px;flex-shrink:0;letter-spacing:1px;}
+.bar-track{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;transition:width .6s ease;}
+.bar-fill.t{background:var(--accent);}
+.bar-fill.s{background:var(--indigo);}
+.bar-num{font-size:10px;color:var(--muted-2);min-width:34px;text-align:right;}
+.legend{display:flex;gap:16px;margin-bottom:14px;font-size:11px;color:var(--muted-2);}
+.leg-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle;}
+.back-row{margin-bottom:20px;display:flex;gap:10px;}
+
+/* install banner */
+.install-banner{
+  background:var(--surface);border:1px solid var(--accent);border-radius:12px;
+  padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  animation:fadeUp .3s ease forwards;
+}
+.install-banner p{flex:1;font-size:13px;color:var(--muted-2);min-width:160px;}
+.install-banner p strong{color:var(--text);}
+
+footer{border-top:1px solid var(--border);margin-top:8px;padding:28px 0 44px;text-align:center;}
+.credits{font-size:12px;color:var(--muted);line-height:2;letter-spacing:.3px;}
+.credits strong{color:var(--muted-2);}
+.credits .hi{color:var(--accent);}
+.credits .div{margin:0 10px;color:var(--border);}
+
+.hidden{display:none!important;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">NBA DNA</div>
+    <div class="tagline">Player Similarity Engine</div>
+  </header>
+
+  <!-- install prompt -->
+  <div id="install-banner" class="install-banner hidden">
+    <p><strong>Install NBA DNA</strong> — add this app to your home screen for quick access.</p>
+    <button class="btn" id="install-btn" onclick="installApp()">Install App</button>
+    <button class="btn-ghost" onclick="document.getElementById('install-banner').classList.add('hidden')">Not now</button>
+  </div>
+
+  <!-- SEARCH -->
+  <section id="s-search">
+    <div class="search-row">
+      <input class="search-input" id="nameInput" type="text"
+        placeholder="Enter player name (e.g. Stephen Curry)"
+        onkeydown="if(event.key==='Enter')lookupPlayer()">
+      <button class="btn" onclick="lookupPlayer()">FIND →</button>
+    </div>
+    <p class="hint">Make sure your Spring Boot server is running at <code>localhost:8080</code></p>
+    <div id="confirm-area"></div>
+  </section>
+
+  <!-- CONFIG -->
+  <section id="s-config" class="hidden">
+    <div class="back-row">
+      <button class="btn-ghost" onclick="showSection('s-search')">← Back</button>
+    </div>
+    <div class="config-box">
+      <div class="config-top">
+        <span class="config-title">Weight Settings</span>
+        <div class="toggle-row">
+          <button class="tog on" id="tog-preset" onclick="setMode('preset')">Smart Weights</button>
+          <button class="tog" id="tog-custom" onclick="setMode('custom')">Custom</button>
+        </div>
+      </div>
+      <div id="preset-panel">
+        <div class="preset-note">
+          <strong>Smart Weights</strong> automatically adjusts stat importance based on the target
+          player's position — guards are weighted toward assists and shooting, while centers
+          prioritize rebounds and blocks. No configuration needed.
+        </div>
+      </div>
+      <div id="custom-panel" class="hidden">
+        <div class="stats-grid" id="sliderGrid"></div>
+      </div>
+      <div class="config-actions">
+        <button class="btn" onclick="runSearch()">FIND SIMILAR PLAYERS →</button>
+        <button class="btn-ghost" onclick="showSection('s-search')">Cancel</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="s-results" class="hidden">
+    <div class="back-row">
+      <button class="btn-ghost" onclick="showSection('s-config')">← Change Weights</button>
+      <button class="btn-ghost" onclick="showSection('s-search')">New Search</button>
+    </div>
+    <div id="results-content"></div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="credits">
+    <span>Backend engineered by <strong>Nathanael Lee</strong></span>
+    <span class="div">·</span>
+    <span>Frontend crafted by <span class="hi">Claude</span></span>
+    <br>
+    <span>Powered by <strong>Spring Boot</strong> &amp; <strong>NBA Stats API</strong></span>
+    <span class="div">·</span>
+    <span>2024 Season Data</span>
+  </div>
+</footer>
+
+<script>
+const API = '';  // empty = same origin (served from Spring Boot at localhost:8080)
+
+const STATS = [
+  {key:'pts',    label:'PTS',  name:'Points / Game',      param:'pts',        max:45},
+  {key:'ast',    label:'AST',  name:'Assists / Game',     param:'ast',        max:15},
+  {key:'reb',    label:'REB',  name:'Rebounds / Game',    param:'reb',        max:20},
+  {key:'3ptPCT', label:'3P%',  name:'3-Point %',          param:'threePtPCT', max:.6},
+  {key:'3ptATM', label:'3PA',  name:'3-Pt Attempts / G',  param:'threePtATM', max:15},
+  {key:'fgPCT',  label:'FG%',  name:'Field Goal %',       param:'fgPCT',      max:.7},
+  {key:'efgPCT', label:'eFG%', name:'Eff. Field Goal %',  param:'efgPCT',     max:.75},
+  {key:'ftPCT',  label:'FT%',  name:'Free Throw %',       param:'ftPCT',      max:1},
+  {key:'stl',    label:'STL',  name:'Steals / Game',      param:'stl',        max:4},
+  {key:'blk',    label:'BLK',  name:'Blocks / Game',      param:'blk',        max:4},
+  {key:'to',     label:'TO',   name:'Turnovers / Game',   param:'to',         max:7},
+  {key:'min',    label:'MIN',  name:'Minutes / Game',     param:'min',        max:42},
+  {key:'fga',    label:'FGA',  name:'FG Attempts / G',    param:'fga',        max:30},
+  {key:'fta',    label:'FTA',  name:'FT Attempts / G',    param:'fta',        max:15},
+  {key:'pf',     label:'PF',   name:'Personal Fouls / G', param:'pf',         max:6},
+];
+
+const KEY_DISPLAY = ['pts','ast','reb','3ptPCT','stl','blk'];
+let mode = 'preset';
+let confirmedPlayer = null;
+let deferredInstallPrompt = null;
+
+// ── PWA: SERVICE WORKER ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('Service worker registered:', reg.scope))
+      .catch(err => console.log('Service worker failed:', err));
+  });
+}
+
+// ── PWA: INSTALL PROMPT ──
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  document.getElementById('install-banner').classList.remove('hidden');
+});
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner').classList.add('hidden');
+  deferredInstallPrompt = null;
+});
+
+function installApp() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(() => {
+    deferredInstallPrompt = null;
+    document.getElementById('install-banner').classList.add('hidden');
+  });
+}
+
+// ── PLAYER LOOKUP ──
+async function lookupPlayer() {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) return;
+  const area = document.getElementById('confirm-area');
+  area.innerHTML = `<div class="searching">Searching for "${name}"...</div>`;
+  try {
+    const res = await fetch(`${API}/player?name=${encodeURIComponent(name)}`);
+    if (!res.ok) throw new Error();
+    const player = await res.json();
+    if (!player || !player.fullName) {
+      area.innerHTML = `<div class="confirm-err">No player found matching "<strong>${name}</strong>". Try a different spelling.</div>`;
+      confirmedPlayer = null;
+      return;
+    }
+    confirmedPlayer = player;
+    const initials = player.fullName.split(' ').map(w=>w[0]).join('').slice(0,2);
+    area.innerHTML = `
+      <div class="confirm-card">
+        <div class="confirm-avatar">${initials}</div>
+        <div class="confirm-info">
+          <div class="confirm-found">Player Found</div>
+          <div class="confirm-name">${player.fullName}</div>
+          <div class="confirm-pos">${posLabel(player.position)} · 2024 Season</div>
+        </div>
+        <div class="confirm-actions">
+          <button class="btn" onclick="goConfig()">Continue →</button>
+          <button class="btn-ghost" onclick="clearConfirm()">Not right?</button>
+        </div>
+      </div>`;
+  } catch(e) {
+    area.innerHTML = `<div class="confirm-err">Could not connect to the server. Is Spring Boot running?</div>`;
+  }
+}
+
+function clearConfirm() {
+  confirmedPlayer = null;
+  document.getElementById('confirm-area').innerHTML = '';
+  document.getElementById('nameInput').value = '';
+  document.getElementById('nameInput').focus();
+}
+
+function goConfig() {
+  if (!confirmedPlayer) return;
+  showSection('s-config');
+}
+
+function posLabel(pos) {
+  return {PG:'Point Guard',SG:'Shooting Guard',SF:'Small Forward',PF:'Power Forward',C:'Center'}[pos]||(pos||'Unknown');
+}
+
+// ── SLIDERS ──
+function buildSliders() {
+  const grid = document.getElementById('sliderGrid');
+  if (grid.children.length) return;
+  STATS.forEach(s => {
+    grid.innerHTML += `<div class="stat-tile">
+      <div class="stat-abbr">${s.label}</div>
+      <div class="stat-name">${s.name}</div>
+      <input class="weight-slider" type="range" min="0" max="10" step="0.5" value="0"
+        id="w-${s.key}" oninput="document.getElementById('v-${s.key}').textContent=parseFloat(this.value).toFixed(1)">
+      <div class="weight-val" id="v-${s.key}">0.0</div>
+    </div>`;
+  });
+}
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('tog-preset').className = 'tog'+(m==='preset'?' on':'');
+  document.getElementById('tog-custom').className  = 'tog'+(m==='custom'?' on':'');
+  document.getElementById('preset-panel').classList.toggle('hidden',m!=='preset');
+  document.getElementById('custom-panel').classList.toggle('hidden',m!=='custom');
+  if (m==='custom') buildSliders();
+}
+
+function showSection(id) {
+  ['s-search','s-config','s-results'].forEach(s=>document.getElementById(s).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+// ── SEARCH ──
+async function runSearch() {
+  if (!confirmedPlayer) { showSection('s-search'); return; }
+  showSection('s-results');
+  document.getElementById('results-content').innerHTML =
+    `<div class="loading"><div class="spinner"></div><p>Analyzing player DNA...</p></div>`;
+  try {
+    let url = `${API}/similar?name=${encodeURIComponent(confirmedPlayer.fullName)}`;
+    if (mode==='custom') {
+      let any = false;
+      STATS.forEach(s => {
+        const w = parseFloat(document.getElementById('w-'+s.key)?.value||0);
+        if (w>0) { url+=`&${s.param}=${w}`; any=true; }
+      });
+      if (!any) {
+        document.getElementById('results-content').innerHTML =
+          `<div class="err-box">Please set at least one stat weight above 0.</div>`;
+        return;
+      }
+    }
+    const res = await fetch(url);
+    if (!res.ok) throw new Error();
+    renderResults(confirmedPlayer, await res.json());
+  } catch(e) {
+    document.getElementById('results-content').innerHTML =
+      `<div class="err-box">Could not connect to the server. Is Spring Boot running?</div>`;
+  }
+}
+
+// ── RENDER ──
+function renderResults(target, similar) {
+  const initials = target.fullName.split(' ').map(w=>w[0]).join('').slice(0,2);
+  const keyStats = KEY_DISPLAY.map(k => {
+    const s = STATS.find(x=>x.key===k);
+    return `<div class="kstat"><div class="kstat-val">${fmt(target.stats?.[k],k)}</div><div class="kstat-lbl">${s?.label||k}</div></div>`;
+  }).join('');
+
+  let cmpKeys = KEY_DISPLAY;
+  if (mode==='custom') {
+    cmpKeys = STATS.filter(s=>parseFloat(document.getElementById('w-'+s.key)?.value||0)>0).map(s=>s.key);
+    if (!cmpKeys.length) cmpKeys = KEY_DISPLAY;
+  }
+
+  const cards = similar.slice(0,5).map((p,i) => {
+    const bars = cmpKeys.map(k => {
+      const st=STATS.find(x=>x.key===k), tv=target.stats?.[k]??0, sv=p.stats?.[k]??0, mx=st?.max||1;
+      const tw=Math.min(100,(tv/mx)*100).toFixed(1), sw=Math.min(100,(sv/mx)*100).toFixed(1);
+      return `<div class="cmp">
+        <div class="cmp-label">${st?.label||k}</div>
+        <div class="bar-row"><span class="bar-who">TARGET</span><div class="bar-track"><div class="bar-fill t" style="width:${tw}%"></div></div><span class="bar-num">${fmt(tv,k)}</span></div>
+        <div class="bar-row"><span class="bar-who">MATCH</span><div class="bar-track"><div class="bar-fill s" style="width:${sw}%"></div></div><span class="bar-num">${fmt(sv,k)}</span></div>
+      </div>`;
+    }).join('');
+    return `<div class="sim-card" style="animation-delay:${i*.07}s">
+      <div class="sim-top">
+        <div class="rank">${String(i+1).padStart(2,'0')}</div>
+        <div><div class="sim-name">${p.fullName||'Unknown'}</div><div class="sim-pos">${posLabel(p.position)} · 2024 Season</div></div>
+        <div class="sim-badge">${mode==='preset'?'POSITION MATCH':'CUSTOM MATCH'}</div>
+      </div>
+      <div class="comparisons">${bars}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('results-content').innerHTML = `
+    <div class="results-wrap">
+      <div class="sec-label">Target Player</div>
+      <div class="target-card">
+        <div class="avatar">${initials}</div>
+        <div class="player-info">
+          <div class="player-name">${target.fullName}</div>
+          <div class="player-meta">${posLabel(target.position)} · 2024 Season · ${mode==='preset'?'Smart Weights':'Custom Weights'}</div>
+        </div>
+        <div class="key-stats">${keyStats}</div>
+      </div>
+      <div class="sec-label">Most Similar Players</div>
+      <div class="legend">
+        <span><span class="leg-dot" style="background:var(--accent)"></span>Target Player</span>
+        <span><span class="leg-dot" style="background:var(--indigo)"></span>Similar Match</span>
+      </div>
+      <div class="sim-list">${cards}</div>
+    </div>`;
+}
+
+function fmt(val,key) {
+  if (val==null) return '—';
+  if (['3ptPCT','fgPCT','efgPCT','ftPCT'].includes(key)) return (val*100).toFixed(1)+'%';
+  return parseFloat(val).toFixed(1);
+}
+</script>
+</body>
+</html>
