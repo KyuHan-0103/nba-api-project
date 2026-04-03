@@ -170,6 +170,11 @@ footer{border-top:1px solid var(--border);margin-top:8px;padding:28px 0 44px;tex
   <header>
     <div class="logo">NBA DNA</div>
     <div class="tagline">Player Similarity Engine</div>
+    <p style="font-size:13px;color:var(--muted);margin-top:16px;line-height:1.8;max-width:480px;margin-left:auto;margin-right:auto;">
+      Enter any NBA player from the 2024 season and discover who plays most like them. 
+      Compare across 15 real stats using smart position-aware weights, or build your own 
+      custom comparison.
+    </p>
   </header>
 
   <!-- install prompt -->
@@ -187,7 +192,7 @@ footer{border-top:1px solid var(--border);margin-top:8px;padding:28px 0 44px;tex
         onkeydown="if(event.key==='Enter')lookupPlayer()">
       <button class="btn" onclick="lookupPlayer()">FIND →</button>
     </div>
-    <p class="hint">Enter any NBA player's name from the 2024 season<code>localhost:8080</code></p>
+    <p class="hint">Enter any NBA player's name from the 2024 season</p>
     <div id="confirm-area"></div>
   </section>
 
