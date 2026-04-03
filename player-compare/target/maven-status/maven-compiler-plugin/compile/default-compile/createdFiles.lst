@@ -1,8 +1,8 @@
 com\erdgy\nba\Main.class
 com\erdgy\nba\model\Player.class
-com\erdgy\nba\service\PlayerService.class
 com\erdgy\nba\api\NBAApiClient.class
 com\erdgy\nba\controller\PlayerController.class
 com\erdgy\nba\service\SimilarityService.class
+com\erdgy\nba\service\PlayerService.class
 com\erdgy\nba\DataCache.class
 com\erdgy\nba\service\PlayerSimilarity.class
