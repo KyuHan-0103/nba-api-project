@@ -10,9 +10,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.erdgy.nba.model.Player;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
-import java.util.List; 
+import java.util.List;
 
+import org.springframework.stereotype.Component; 
 
+@Component
 public class NBAApiClient {
   
   private final HttpClient client;
@@ -47,17 +49,12 @@ public class NBAApiClient {
 
         if(dataArray.isArray()){
           for(JsonNode dataNode : dataArray){
-            double games = dataNode.get("games").asInt();
-            double points = dataNode.get("points").asInt()/games;
-            double assists = dataNode.get("assists").asInt()/games;
-            double threeAtmPerGame = dataNode.get("threeAttempts").asDouble()/games;
+            int games = dataNode.get("games").asInt();
             allPlayers.add(new Player(
               dataNode.get("playerId").asText(),
               dataNode.get("playerName").asText(),
-              points,
-              assists,
-              dataNode.get("threePercent").asDouble(),
-              threeAtmPerGame
+              dataNode,
+              games
             ));
           }
         }
@@ -100,34 +97,5 @@ public class NBAApiClient {
     return fetchApiResponse(
         "https://api.server.nbaapi.com/api/playertotals?season=2024&pageSize=100&page=" + page
     );
-  }
-  
-  private List<Integer> extractPlayerIds(String activePlayerList){
-
-    try {
-      List<Integer> playerIds = new ArrayList<Integer>();
-
-      ObjectMapper mapper = new ObjectMapper();
-      //Deserialize JSON into Json node
-      JsonNode root = mapper.readTree(activePlayerList);
-
-      //Access the data
-      JsonNode dataArray = root.get("data");
-
-      //Checks to make sure "data" is a correct field and isn't missing from API
-      if (dataArray == null || !dataArray.isArray()) {
-          throw new RuntimeException("Invalid API response: missing 'data' array");
-      }
-
-      //Take every id and append them into an array to get all the ids of all the players
-      for(JsonNode playerNode: dataArray){
-        playerIds.add(playerNode.get("id").asInt());
-      }
-
-      return playerIds;
-
-    } catch (IOException e) {
-      throw new RuntimeException("Error");
-    }
   }
 }
