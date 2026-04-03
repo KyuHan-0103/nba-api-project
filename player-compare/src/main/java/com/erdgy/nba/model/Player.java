@@ -58,4 +58,8 @@ public class Player {
   public List<String> getStatList(){
     return new ArrayList<String>(stats.keySet());
   }
+
+  public HashMap<String, Double> getStats(){
+    return stats;
+  }
 }
