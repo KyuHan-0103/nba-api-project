@@ -3,6 +3,8 @@ package com.erdgy.nba.model;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class Player {
@@ -55,6 +57,7 @@ public class Player {
     return this.position; 
   }
 
+  @JsonIgnore
   public List<String> getStatList(){
     return new ArrayList<String>(stats.keySet());
   }
