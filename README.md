@@ -10,11 +10,6 @@ Give it any NBA player. It returns the five players who most resemble them stati
 > Hosted on Render's free tier, so the container sleeps when idle. The first request after a period of inactivity takes up to 30 seconds to wake it. Subsequent requests are fast.
 
 `Java 21` · `Spring Boot 3.2` · `Vanilla JS PWA` · `Docker`
-
-<!-- TODO: add a screenshot or short GIF here. For a visual app this is the single
-     highest-value addition to the README — put it directly under the demo link.
-     Save it to docs/screenshot.png and use: ![NBA DNA](docs/screenshot.png) -->
-
 ---
 
 ## What it does
