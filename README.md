@@ -3,6 +3,9 @@
 Give it any NBA player. It returns the five players who most resemble them statistically, weighted by what actually matters at that player's position.
 
 **Live demo → [nba-api-project.onrender.com](https://nba-api-project.onrender.com)**
+<img width="1710" height="1107" alt="Screenshot 2026-08-06 at 12 00 57 AM" src="https://github.com/user-attachments/assets/c223e104-e51d-46b8-a29e-ff1bac89f693" />
+
+<img width="1710" height="1107" alt="Screenshot 2026-08-06 at 12 01 21 AM" src="https://github.com/user-attachments/assets/42031035-1302-4946-ae41-3efa43365169" />
 
 > Hosted on Render's free tier, so the container sleeps when idle. The first request after a period of inactivity takes up to 30 seconds to wake it. Subsequent requests are fast.
 
