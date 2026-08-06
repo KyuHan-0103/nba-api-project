@@ -1,0 +1,18 @@
+# Maven build output
+target/
+
+# Runtime logs
+*.log
+
+# Editor / IDE
+.vscode/
+.idea/
+*.iml
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Local config and secrets
+.env
+application-local.properties
