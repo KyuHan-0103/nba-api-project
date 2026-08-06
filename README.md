@@ -25,7 +25,7 @@ The frontend is a three-step flow — search, configure weights, results — ser
 
 ## Why I built it
 
-Stephen Curry has always been my favorite basketball players and my favorite celebrity for a long time. As time has, and continues to, pass I wanted to create a program that can, statistically, find players who are similar to our favorite players. I also wanted to see whether a deliberately simple and fully explainable distance model could reproduce the comparisons fans make intuitively — and whether weighting stats by position would get closer to how people actually think about role than treating every category as equally important. It started as a terminal program driven by `Scanner` prompts, and turning it into a deployed, installable web app meant building the whole path: paginated third-party API, in-memory caching, REST layer, frontend, container, deploy.
+Stephen Curry has always been my favorite basketball players and my favorite celebrity for a long time. As the NBA has changed over the years, I wanted to create a program that can find players who are similar to our favorite players. I also wanted to see whether a deliberately simple and fully explainable distance model could reproduce the comparisons fans make intuitively — and whether weighting stats by position would get closer to how people actually think about role than treating every category as equally important. It started as a terminal program driven by `Scanner` prompts, and turning it into a deployed, installable web app meant building the whole path: paginated third-party API, in-memory caching, REST layer, frontend, container, deploy.
 
 ## How it works
 
