@@ -55,7 +55,7 @@ The endpoint returns **season totals**, so volume statistics are divided by game
 | `blk` | `blocks` | ÷ games |
 | `to` | `turnovers` | ÷ games |
 | `pf` | `personalFouls` | ÷ games |
-| `min` | `minutesPg` | ÷ games |
+| `min` | `minutesPg*` | ÷ games |
 | `fga` | `fieldAttempts` | ÷ games |
 | `fta` | `ftAttempts` | ÷ games |
 | `3ptATM` | `threeAttempts` | ÷ games |
@@ -64,6 +64,7 @@ The endpoint returns **season totals**, so volume statistics are divided by game
 | `3ptPCT` | `threePercent` | as reported |
 | `efgPCT` | `effectFgPercent` | as reported |
 
+*Although the source field says minutesPg it still returns total minutes
 ### 2. Scoring
 
 Similarity is a **weighted Manhattan (L1) distance** across the selected categories:
